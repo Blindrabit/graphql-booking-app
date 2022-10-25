@@ -1,7 +1,7 @@
 import arrow
 import datetime
 
-from bookings.models import Office, Booked
+from bookings.models import Office, Booking
 from tests import helpers
 
 
@@ -75,8 +75,8 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
         office = helpers.create_office()
         response = self.client.execute(
             """
-            mutation updateOrCreateBooking {
-                updateOrCreateBooking (officeId: "%s", date: "%s"){
+            mutation createBooking {
+                createBooking (officeId: "%s", date: "%s"){
                     booked {
                         date
                         office {
@@ -91,7 +91,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             """
             % (str(office.uuid), arrow.utcnow().date().isoformat())
         )
-        booking = Booked.objects.all()
+        booking = Booking.objects.all()
         assert booking.count() == 1
         booking = booking.first()
         assert booking.date == datetime.date.today()
@@ -106,8 +106,8 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
         )
         response = self.client.execute(
             """
-            mutation updateOrCreateBooking {
-                updateOrCreateBooking (uuid: "%s", officeId: "%s", date: "%s"){
+            mutation updateBooking {
+                updateBooking (uuid: "%s", officeId: "%s", date: "%s"){
                     booked {
                         uuid
                         date
@@ -121,7 +121,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
                 today_date.shift(days=1).date().isoformat(),
             )
         )
-        booking = Booked.objects.get(uuid=booking.uuid)
+        booking = Booking.objects.get(uuid=booking.uuid)
         assert booking.date == today_date.shift(days=1).date()
 
         assert booking.office == office
@@ -136,8 +136,8 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
         )
         response = self.client.execute(
             """
-            mutation updateOrCreateBooking {
-                updateOrCreateBooking (uuid: "%s", officeId: "%s", date: "%s"){
+            mutation updateBooking {
+                updateBooking (uuid: "%s", officeId: "%s", date: "%s"){
                     booked {
                         uuid
                         date
@@ -147,7 +147,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             """
             % (str(booking.uuid), str(office_2.uuid), today_date.date().isoformat())
         )
-        booking = Booked.objects.get(uuid=booking.uuid)
+        booking = Booking.objects.get(uuid=booking.uuid)
         assert booking.office == office_2
 
         assert booking.date == today_date.date()
@@ -162,8 +162,8 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
         )
         response = self.client.execute(
             """
-            mutation updateOrCreateBooking {
-                updateOrCreateBooking (officeId: "%s", date: "%s"){
+            mutation createBooking {
+                createBooking (officeId: "%s", date: "%s"){
                     booked {
                         date
                         office {
@@ -191,4 +191,4 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             'mutation deleteBooking{ deleteBooking (uuid: "%s"){ booking {uuid}}}'
             % str(booking_uuid)
         )
-        assert not Booked.objects.filter(uuid=booking_uuid)
+        assert not Booking.objects.filter(uuid=booking_uuid)

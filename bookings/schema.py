@@ -9,7 +9,7 @@ from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
 from graphql_jwt.decorators import login_required
 
-from bookings.models import Office, Booked
+from bookings.models import Office, Booking
 
 
 class OfficeType(DjangoObjectType):
@@ -26,7 +26,7 @@ class UserType(DjangoObjectType):
 
 class BookingType(DjangoObjectType):
     class Meta:
-        model = Booked
+        model = Booking
         interfaces = (Node,)
         fields = ("uuid", "office", "user", "date")
         filter_fields = ["user__squad", "date", "office"]
@@ -40,7 +40,7 @@ class BookingQuery(graphene.ObjectType):
     @staticmethod
     @login_required
     def resolve_all_booked(root, info):
-        return Booked.objects.all()
+        return Booking.objects.all()
 
     @staticmethod
     @login_required
@@ -48,9 +48,8 @@ class BookingQuery(graphene.ObjectType):
         return Office.objects.all()
 
 
-class BookedCreateOrUpdateMutation(graphene.Mutation):
+class BookingCreateMutation(graphene.Mutation):
     class Arguments:
-        uuid = graphene.UUID()
         office_id = graphene.UUID(required=True)
         date = graphene.Date(required=True)
 
@@ -58,16 +57,47 @@ class BookedCreateOrUpdateMutation(graphene.Mutation):
 
     @classmethod
     @login_required
-    def mutate(cls, root, info, office_id, date, uuid=uuid4()):
+    def mutate(cls, root, info, office_id, date):
         try:
-            booked, _ = Booked.objects.update_or_create(
-                uuid=str(uuid), defaults={"office_id": office_id, "user_id": info.context.user.id, "date": date}
+            booking = Booking.objects.create(
+                uuid=str(uuid4()),
+                office_id=office_id,
+                user=info.context.user,
+                date=date,
             )
         except IntegrityError:
             raise GraphQLError("you can't book onto more than 1 office a day")
-        return BookedCreateOrUpdateMutation(booked=booked)
+        return BookingCreateMutation(booked=booking)
 
 
+class BookingUpdateMutation(graphene.Mutation):
+    class Arguments:
+        uuid = graphene.UUID(required=True)
+        office_id = graphene.UUID(required=False)
+        date = graphene.Date(required=False)
+
+    booked = graphene.Field(BookingType)
+
+    @classmethod
+    @login_required
+    def mutate(cls, root, info, uuid, office_id=None, date=None):
+        try:
+            booking = Booking.objects.get(uuid=uuid, user=info.context.user)
+        except Booking.DoesNotExist:
+            raise GraphQLError("this booking does not exist")
+        try:
+            if office_id:
+                booking.office_id = office_id
+            if date:
+                booking.date = date
+            booking.save()
+        except IntegrityError:
+            raise GraphQLError("you can't book onto more than 1 office a day")
+        return BookingCreateMutation(booked=booking)
+
+
+# TODO: I left this here as I wanted feedback on if using update_or_create was at all okay - I think I hate it, lol
+# having it in a create and update class makes it much cleaner
 class OfficeCreateOrUpdateMutation(graphene.Mutation):
     class Arguments:
         uuid = graphene.UUID()
@@ -78,7 +108,9 @@ class OfficeCreateOrUpdateMutation(graphene.Mutation):
     @classmethod
     @login_required
     def mutate(cls, root, info, name, uuid=uuid4()):
-        office, _ = Office.objects.update_or_create(uuid=str(uuid), defaults={"name": name})
+        office, _ = Office.objects.update_or_create(
+            uuid=str(uuid), defaults={"name": name}
+        )
         return OfficeCreateOrUpdateMutation(office=office)
 
 
@@ -105,12 +137,13 @@ class BookingDeleteMutation(graphene.Mutation):
     @login_required
     def mutate(cls, root, info, uuid):
         # TODO: check what to respond here
-        return Booked.objects.filter(uuid=uuid, user=info.context.user).delete()
+        return Booking.objects.filter(uuid=uuid, user=info.context.user).delete()
 
 
 class BookingMutation(graphene.ObjectType):
 
-    update_or_create_booking = BookedCreateOrUpdateMutation.Field()
+    create_booking = BookingCreateMutation.Field()
+    update_booking = BookingUpdateMutation.Field()
     update_or_create_office = OfficeCreateOrUpdateMutation.Field()
     delete_office = OfficeDeleteMutation.Field()
     delete_booking = BookingDeleteMutation.Field()

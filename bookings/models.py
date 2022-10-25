@@ -7,10 +7,14 @@ class Office(models.Model):
     name = models.CharField(max_length=128)
 
 
-class Booked(models.Model):
+class Booking(models.Model):
     uuid = models.UUIDField(primary_key=True)
-    office = models.ForeignKey("bookings.office", on_delete=models.CASCADE, related_name="booking")
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="booking")
+    office = models.ForeignKey(
+        "bookings.office", on_delete=models.CASCADE, related_name="booking"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="booking"
+    )
     date = models.DateField(null=True)
 
     class Meta:
