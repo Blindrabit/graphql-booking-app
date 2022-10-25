@@ -20,3 +20,6 @@ class ExtendedUser(AbstractUser):
         PRACTICE_GROUP = "practice_group"
 
     squad = models.CharField(max_length=128, choices=Squad.choices, null=True)
+
+    SQUAD_FIELD = "squad"
+    CLUB_FIELD = "club"

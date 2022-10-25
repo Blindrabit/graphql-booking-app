@@ -160,3 +160,5 @@ GRAPHQL_JWT = {
 }
 
 AUTH_USER_MODEL = "users.ExtendedUser"
+
+GRAPHQL_AUTH = {"REGISTER_MUTATION_FIELDS": ["username", "email", "club", "squad"]}

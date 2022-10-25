@@ -7,9 +7,14 @@ from graphene import Node
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from graphql import GraphQLError
-from graphql_jwt.decorators import login_required
 
 from bookings.models import Office, Booking
+
+
+def is_user_authenticated(info):
+    user = info.context.user
+    if user.is_anonymous:
+        raise Exception("not logged in")
 
 
 class OfficeType(DjangoObjectType):
@@ -21,7 +26,7 @@ class OfficeType(DjangoObjectType):
 class UserType(DjangoObjectType):
     class Meta:
         model = get_user_model()
-        fields = ("id", "username", "email")
+        fields = ("id", "username", "email", "squad", "club")
 
 
 class BookingType(DjangoObjectType):
@@ -29,23 +34,28 @@ class BookingType(DjangoObjectType):
         model = Booking
         interfaces = (Node,)
         fields = ("uuid", "office", "user", "date")
-        filter_fields = ["user__squad", "date", "office"]
+        filter_fields = ["user__squad", "date", "office_id"]
 
 
 class BookingQuery(graphene.ObjectType):
-    all_booked = graphene.List(BookingType)
+    all_bookings = graphene.List(BookingType)
     all_offices = graphene.List(OfficeType)
-    all_bookings_by_squad = DjangoFilterConnectionField(BookingType)
+    filter_bookings = DjangoFilterConnectionField(BookingType)
 
     @staticmethod
-    @login_required
-    def resolve_all_booked(root, info):
+    def resolve_all_bookings(root, info):
+        is_user_authenticated(info)
         return Booking.objects.all()
 
     @staticmethod
-    @login_required
     def resolve_all_offices(root, info):
+        is_user_authenticated(info)
         return Office.objects.all()
+
+    @staticmethod
+    def resolve_filter_bookings(root, info, *args, **kwargs):
+        is_user_authenticated(info)
+        return Booking.objects.all()
 
 
 class BookingCreateMutation(graphene.Mutation):
@@ -53,11 +63,11 @@ class BookingCreateMutation(graphene.Mutation):
         office_id = graphene.UUID(required=True)
         date = graphene.Date(required=True)
 
-    booked = graphene.Field(BookingType)
+    booking = graphene.Field(BookingType)
 
     @classmethod
-    @login_required
     def mutate(cls, root, info, office_id, date):
+        is_user_authenticated(info)
         try:
             booking = Booking.objects.create(
                 uuid=str(uuid4()),
@@ -67,7 +77,7 @@ class BookingCreateMutation(graphene.Mutation):
             )
         except IntegrityError:
             raise GraphQLError("you can't book onto more than 1 office a day")
-        return BookingCreateMutation(booked=booking)
+        return BookingCreateMutation(booking=booking)
 
 
 class BookingUpdateMutation(graphene.Mutation):
@@ -79,8 +89,8 @@ class BookingUpdateMutation(graphene.Mutation):
     booked = graphene.Field(BookingType)
 
     @classmethod
-    @login_required
     def mutate(cls, root, info, uuid, office_id=None, date=None):
+        is_user_authenticated(info)
         try:
             booking = Booking.objects.get(uuid=uuid, user=info.context.user)
         except Booking.DoesNotExist:
@@ -106,8 +116,8 @@ class OfficeCreateOrUpdateMutation(graphene.Mutation):
     office = graphene.Field(OfficeType)
 
     @classmethod
-    @login_required
     def mutate(cls, root, info, name, uuid=uuid4()):
+        is_user_authenticated(info)
         office, _ = Office.objects.update_or_create(
             uuid=str(uuid), defaults={"name": name}
         )
@@ -121,8 +131,8 @@ class OfficeDeleteMutation(graphene.Mutation):
     office = graphene.Field(OfficeType)
 
     @classmethod
-    @login_required
     def mutate(cls, root, info, uuid):
+        is_user_authenticated(info)
         # TODO: check what to respond here
         return Office.objects.filter(uuid=uuid).delete()
 
@@ -134,8 +144,8 @@ class BookingDeleteMutation(graphene.Mutation):
     booking = graphene.Field(BookingType)
 
     @classmethod
-    @login_required
     def mutate(cls, root, info, uuid):
+        is_user_authenticated(info)
         # TODO: check what to respond here
         return Booking.objects.filter(uuid=uuid, user=info.context.user).delete()
 
