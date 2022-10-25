@@ -12,5 +12,11 @@ class ExtendedUser(AbstractUser):
 
     class Squad(models.TextChoices):
         LUNAR = "lunar"
+        HORIZON = "horizon"
+        POLARIS = " polaris"
+        VOYAGER = "voyager"
+        ORION = "orion"
+        VANGUARD = "vanguard"
+        PRACTICE_GROUP = "practice_group"
 
     squad = models.CharField(max_length=128, choices=Squad.choices, null=True)
