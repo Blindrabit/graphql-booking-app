@@ -1,0 +1,20 @@
+[
+  {
+    "model": "bookings.booking",
+    "pk": "2e1cb4c3-815a-416a-8d13-6d7019e064a2",
+    "fields": {
+      "office": "783ec4a7-a41e-4207-a4ff-4b937651ba81",
+      "user": 1,
+      "date": "2022-10-27"
+    }
+  },
+  {
+    "model": "bookings.booking",
+    "pk": "f94396a8-5582-4247-8979-74a4a5bd0d26",
+    "fields": {
+      "office": "783ec4a7-a41e-4207-a4ff-4b937651ba81",
+      "user": 2,
+      "date": "2022-10-26"
+    }
+  }
+]

@@ -1,0 +1,42 @@
+[
+  {
+    "model": "users.extendeduser",
+    "pk": 1,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$WewgeiUDaHtJzNF91IZcpS$wdLLytMn0iZVFProw5gLFNjR8l9YlYv6hIh7LXrmOzI=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "test_account",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-10-25T14:33:44.650Z",
+      "email": "email@email.com",
+      "club": "dekker",
+      "squad": "lunar",
+      "groups": [],
+      "user_permissions": []
+    }
+  },
+  {
+    "model": "users.extendeduser",
+    "pk": 2,
+    "fields": {
+      "password": "pbkdf2_sha256$260000$WbS5H6AzWfLrIrUXV3QyCe$Y3+FZRc/s6JsZBeNNEjzOzSDDAv0SEm9y1bIXAGIJQM=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "test_account_2",
+      "first_name": "",
+      "last_name": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2022-10-25T16:16:05.457Z",
+      "email": "email2@email.com",
+      "club": "dekker",
+      "squad": "lunar",
+      "groups": [],
+      "user_permissions": []
+    }
+  }
+]

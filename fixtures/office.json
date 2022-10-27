@@ -1,0 +1,23 @@
+[
+  {
+    "model": "bookings.office",
+    "pk": "783ec4a7-a41e-4207-a4ff-4b937651ba81",
+    "fields": {
+      "name": "Club Dekker"
+    }
+  },
+  {
+    "model": "bookings.office",
+    "pk": "a48b8e75-5baa-4416-a36d-ccd447ac8fcf",
+    "fields": {
+      "name": "London Basecamp"
+    }
+  },
+  {
+    "model": "bookings.office",
+    "pk": "a835c211-645c-4a13-bc64-0f81d8f1473a",
+    "fields": {
+      "name": "Club Hamilton"
+    }
+  }
+]
