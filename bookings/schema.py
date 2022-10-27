@@ -86,7 +86,7 @@ class BookingUpdateMutation(graphene.Mutation):
         office_id = graphene.UUID(required=False)
         date = graphene.Date(required=False)
 
-    booked = graphene.Field(BookingType)
+    booking = graphene.Field(BookingType)
 
     @classmethod
     def mutate(cls, root, info, uuid, office_id=None, date=None):
@@ -103,7 +103,7 @@ class BookingUpdateMutation(graphene.Mutation):
             booking.save()
         except IntegrityError:
             raise GraphQLError("you can't book onto more than 1 office a day")
-        return BookingCreateMutation(booked=booking)
+        return BookingCreateMutation(booking=booking)
 
 
 # TODO: I left this here as I wanted feedback on if using update_or_create was at all okay - I think I hate it, lol

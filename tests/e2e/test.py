@@ -58,9 +58,9 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             user=self.user, office=office, booking_date=datetime.date.today()
         )
         response = self.client.execute(
-            "query allBooked{ allBooked{ uuid office{ uuid name} user{ id username} date}}"
+            "query allBookings{ allBookings{ uuid office{ uuid name} user{ id username} date}}"
         )
-        data = response.data.get("allBooked")
+        data = response.data.get("allBookings")
         assert len(data) == 1
         assert data[0].get("uuid") == str(booking.uuid)
         assert data[0].get("date") == str(booking.date)
@@ -77,7 +77,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             """
             mutation createBooking {
                 createBooking (officeId: "%s", date: "%s"){
-                    booked {
+                    booking {
                         date
                         office {
                             uuid
@@ -108,7 +108,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             """
             mutation updateBooking {
                 updateBooking (uuid: "%s", officeId: "%s", date: "%s"){
-                    booked {
+                    booking {
                         uuid
                         date
                     }
@@ -138,7 +138,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             """
             mutation updateBooking {
                 updateBooking (uuid: "%s", officeId: "%s", date: "%s"){
-                    booked {
+                    booking {
                         uuid
                         date
                     }
@@ -164,7 +164,7 @@ class TestBookingEndPoints(helpers.AuthenticatedClientTestCase):
             """
             mutation createBooking {
                 createBooking (officeId: "%s", date: "%s"){
-                    booked {
+                    booking {
                         date
                         office {
                             uuid
