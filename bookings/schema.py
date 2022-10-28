@@ -106,22 +106,36 @@ class BookingUpdateMutation(graphene.Mutation):
         return BookingCreateMutation(booking=booking)
 
 
-# TODO: I left this here as I wanted feedback on if using update_or_create was at all okay - I think I hate it, lol
-# having it in a create and update class makes it much cleaner
-class OfficeCreateOrUpdateMutation(graphene.Mutation):
+class OfficeCreateMutation(graphene.Mutation):
     class Arguments:
-        uuid = graphene.UUID()
         name = graphene.String(required=True)
 
     office = graphene.Field(OfficeType)
 
     @classmethod
-    def mutate(cls, root, info, name, uuid=uuid4()):
+    def mutate(cls, root, info, name):
         is_user_authenticated(info)
-        office, _ = Office.objects.update_or_create(
-            uuid=str(uuid), defaults={"name": name}
-        )
-        return OfficeCreateOrUpdateMutation(office=office)
+        office = Office.objects.create(uuid=uuid4(), name=name)
+        return OfficeCreateMutation(office=office)
+
+
+class OfficeUpdateMutation(graphene.Mutation):
+    class Arguments:
+        uuid = graphene.UUID(required=True)
+        name = graphene.String(required=True)
+
+    office = graphene.Field(OfficeType)
+
+    @classmethod
+    def mutate(cls, root, info, uuid, name):
+        is_user_authenticated(info)
+        try:
+            office = Office.objects.get(uuid=uuid)
+        except Office.DoesNotExist:
+            raise GraphQLError("This office does not exist")
+        office.name = name
+        office.save()
+        return OfficeUpdateMutation(office=office)
 
 
 class OfficeDeleteMutation(graphene.Mutation):
@@ -154,6 +168,7 @@ class BookingMutation(graphene.ObjectType):
 
     create_booking = BookingCreateMutation.Field()
     update_booking = BookingUpdateMutation.Field()
-    update_or_create_office = OfficeCreateOrUpdateMutation.Field()
+    create_office = OfficeCreateMutation.Field()
+    update_office = OfficeUpdateMutation.Field()
     delete_office = OfficeDeleteMutation.Field()
     delete_booking = BookingDeleteMutation.Field()

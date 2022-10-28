@@ -16,9 +16,9 @@ class TestOfficeEndPoints(helpers.AuthenticatedClientTestCase):
 
     def test_create_office(self):
         response = self.client.execute(
-            'mutation createOffice{ updateOrCreateOffice (name: "office"){ office{ uuid name}}}',
+            'mutation createOffice{ createOffice (name: "office"){ office{ uuid name}}}',
         )
-        response_office = response.data.get("updateOrCreateOffice").get("office")
+        response_office = response.data.get("createOffice").get("office")
         office = Office.objects.get(uuid=response_office.get("uuid"))
         assert office.name == response_office.get("name")
 
@@ -28,7 +28,7 @@ class TestOfficeEndPoints(helpers.AuthenticatedClientTestCase):
         response = self.client.execute(
             """
             mutation updateOffice { 
-                updateOrCreateOffice (name: "new office", uuid: "%s") { 
+                updateOffice (name: "new office", uuid: "%s") { 
                     office { 
                         uuid 
                         name
