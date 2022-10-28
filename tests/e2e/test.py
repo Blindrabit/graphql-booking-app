@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import arrow
 import datetime
 
@@ -40,6 +42,23 @@ class TestOfficeEndPoints(helpers.AuthenticatedClientTestCase):
         )
         office = Office.objects.get(uuid=office_uuid)
         assert office.name == "new office"
+
+    def test_office_update_fails_if_office_does_not_exist(self):
+        office_uuid = str(uuid4())
+        response = self.client.execute(
+            """
+            mutation updateOffice { 
+                updateOffice (name: "new office", uuid: "%s") { 
+                    office { 
+                        uuid 
+                        name
+                    }
+                }
+            }
+            """
+            % office_uuid
+        )
+        assert str(response.errors[0])
 
     def test_delete_office(self):
         office = helpers.create_office()
